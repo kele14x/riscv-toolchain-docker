@@ -1,0 +1,7 @@
+**
+!Dockerfile
+!scripts/
+!scripts/smoke-test.sh
+!downloads/
+!downloads/*/
+!downloads/*/*-ubuntu-24.04-gcc.tar.xz
