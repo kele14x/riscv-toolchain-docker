@@ -112,3 +112,9 @@ The local image tags are:
 - `riscv-toolchain:2026.08.27-riscv64-elf`
 - `riscv-toolchain:2026.08.27-riscv32-glibc`
 - `riscv-toolchain:2026.08.27-riscv64-glibc`
+
+## License
+
+The Dockerfile, scripts, and documentation in this repository are licensed
+under the [MIT License](LICENSE). The toolchains and Ubuntu packages included
+in the images retain their respective upstream licenses.
