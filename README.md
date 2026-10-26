@@ -91,6 +91,29 @@ compiler prefix, for example `make CROSS_COMPILE=riscv64-unknown-elf-`.
 Bare-metal programs still need the startup code and linker script required
 by their board or simulator.
 
+For a compile-only check, `examples/smoke.c` provides a small integer
+arithmetic program that works with all four toolchain variants. From this
+directory, run:
+
+```powershell
+wslc run --rm -v "${PWD}:/work:ro" riscv-toolchain:2026.08.27-riscv64-elf riscv64-unknown-elf-gcc -std=c11 -Wall -Wextra -Werror -c /work/examples/smoke.c -o /tmp/smoke.o
+```
+
+Or with Docker / OrbStack:
+
+```sh
+docker run --rm --platform linux/amd64 \
+  -v "$PWD:/work:ro" \
+  riscv-toolchain:2026.08.27-riscv64-elf \
+  riscv64-unknown-elf-gcc -std=c11 -Wall -Wextra -Werror \
+  -c /work/examples/smoke.c -o /tmp/smoke.o
+```
+
+A successful exit confirms compilation. The object file is written inside
+the temporary container. Substitute the matching image tag and compiler
+from the variant table to check another target. `-c` skips linking, so this
+check needs no board-specific startup code or linker script.
+
 To repeat the built-in checks after building:
 
 ```sh
