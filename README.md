@@ -15,13 +15,62 @@ Each image contains one archive:
 | `riscv64-glibc` | 64-bit Linux / glibc | `riscv64-unknown-linux-gnu-gcc` |
 
 The archives contain **x86-64 Linux host executables**, even for the 32-bit
-RISC-V targets. Build and run with `--platform linux/amd64`. Apple Silicon
-requires amd64 emulation in the Docker engine (for example, OrbStack).
+RISC-V targets. With Docker, build and run with `--platform linux/amd64`.
+Apple Silicon requires amd64 emulation in the Docker engine (for example,
+OrbStack).
 These archives cannot produce a native arm64-hosted compiler image. Docker
 documents the platform and emulation requirements in its
 [multi-platform build guide](https://docs.docker.com/build/building/multi-platform/).
 
 ## Build
+
+### Windows with WSL containers (wslc)
+
+WSL 3.0 includes `wslc`, which builds and runs these Dockerfile images
+without a separate Ubuntu distribution or Docker Desktop installation.
+See Microsoft's [WSL container guide](https://learn.microsoft.com/en-us/windows/wsl/tutorials/wsl-containers).
+Check the runtime from PowerShell:
+
+```powershell
+wslc version
+wslc system info
+```
+
+On an x86-64 Windows host, build the default image with:
+
+```powershell
+./scripts/build.ps1 riscv64-elf
+```
+
+Build all four images:
+
+```powershell
+foreach ($variant in 'riscv32-elf', 'riscv64-elf', 'riscv32-glibc', 'riscv64-glibc') {
+    ./scripts/build.ps1 $variant
+}
+```
+
+The PowerShell script defaults to `wslc`. Use `-ContainerCli docker` for
+Docker, or `-Release` and `-ImageTag` to override the release and tag.
+The `RELEASE` and `IMAGE_TAG` environment variables are also supported.
+`wslc` builds for the native x86-64 host; its build command does not accept
+Docker's `--platform` flag. `.gitattributes` keeps the Linux shell scripts
+and Dockerfile in LF format on Windows checkouts.
+
+The direct equivalent is:
+
+```powershell
+wslc build --build-arg TOOLCHAIN=riscv64-elf --build-arg RELEASE=2026.08.27 -t riscv-toolchain:2026.08.27-riscv64-elf .
+```
+
+Run the compiler or repeat the smoke test:
+
+```powershell
+wslc run --rm riscv-toolchain:2026.08.27-riscv64-elf riscv64-unknown-elf-gcc --version
+wslc run --rm riscv-toolchain:2026.08.27-riscv64-elf toolchain-smoke-test
+```
+
+### Docker / OrbStack
 
 Run from this directory with Docker/OrbStack running:
 
@@ -122,6 +171,12 @@ docker run --rm --platform linux/amd64 \
 ```
 
 ## Verification status
+
+On 2026-10-26, all four variants were rebuilt with `wslc 3.0.3.0` on
+x86-64 Windows 11. Each passed the built-in smoke tests during its build
+and again in a fresh `wslc` container. Both glibc variants executed their
+C and C++ programs successfully in QEMU. The resulting images are
+`linux/amd64`, with GCC/G++ 16.1.0 and QEMU 11.0.0.
 
 On 2026-10-26, all four variants passed the built-in smoke tests during
 `linux/amd64` Docker builds on OrbStack running on Apple Silicon. Checks
